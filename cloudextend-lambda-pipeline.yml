@@ -1,0 +1,67 @@
+# If not created already, you need to create a Service Connection for the project as follows:
+# Type: AWS
+# Name: Staging - Lambdas (az-devops-lambda-deployer)
+# Access Key ID & Secret Access Key: <Get this from "Staging - Lambdas (az-devops-lambda-deployer)" secure note in LastPass>
+
+pool:
+  name: Azure Pipelines
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      proj = "$(Build.DefinitionName)"
+      paths = proj.split(".")[1:]
+      lambdaParts = []
+
+      for p in paths:
+          lambdaParts.append(p[0].lower() + p[1:])
+
+      lambdaName = "-".join(lambdaParts)
+      print("##vso[task.setvariable variable=LambdaName]%s" %lambdaName)
+      print("##vso[task.setvariable variable=TargetProject]%s" %proj)
+
+- bash: |
+    echo '<?xml version="1.0" encoding="UTF-8"?><configuration>   <packageSources><add key="NuGet.org" value="https://api.nuget.org/v3/index.json" /><add key="GitHub" value="https://nuget.pkg.github.com/pro-celigo/index.json" /></packageSources><packageSourceCredentials><GitHub><add key="Username" value="pro-celigo" /><add key="ClearTextPassword" value="$(GitHubPackagesPAT)" /></GitHub></packageSourceCredentials></configuration>' > NuGet.config
+  displayName: 'Setup NuGet Conf'
+
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: '$(TargetProject)/src/*.csproj'
+    feedsToUse: config
+    nugetConfigPath: NuGet.config
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: '$(TargetProject)/src/*.csproj'
+    arguments: '--configuration Release'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '$(TargetProject)/*[Tt]ests/*.csproj'
+    arguments: '--configuration Release'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: '$(TargetProject)/src/*.csproj'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: True
+
+- task: LambdaDeployFunction@1
+  inputs:
+    awsCredentials: 'Staging - Lambdas (az-devops-lambda-deployer)'
+    regionName: 'us-east-1'
+    deploymentMode: 'codeonly'
+    functionName: '$(LambdaName)'
+    codeLocation: 'localfile'
+    localZipFile: '$(build.artifactstagingdirectory)/src.zip'

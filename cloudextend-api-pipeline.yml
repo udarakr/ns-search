@@ -1,0 +1,61 @@
+# ASP.NET Core
+# Build and test .NET Core NuGet projects and deploys them to GitHub Packages.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+# In the Pipeline editor, under the Variables tab, use Varible Groups linking to link $(GitHubPackagesPAT)
+# from Azure Key Vault.
+
+# If not created already, you need to create a Service Connection for the project as follows:
+# Type. AWS
+# Name: Staging - ECR/ECS (az-devops-container-deployer)
+# Access Key ID & Secret Access Key: <Get this from "Staging - ECR/ECS (az-devops-container-deployer)" secure note in LastPass>
+
+pool:
+  name: Azure Pipelines
+  vmImage: 'ubuntu-latest'
+
+steps:
+- bash: |
+    proj=$(Build.DefinitionName)
+    img="$(echo ${proj//\./-} | awk '{print tolower($0)}')"
+    api_count="$(ls -ld API.* | wc -l)"
+    branch=$(Build.SourceBranch)
+    version=${branch#*tags/}
+    echo "##vso[task.setvariable variable=TargetProject]$proj"
+    echo "##vso[task.setvariable variable=ImageName]$img"
+    echo "##vso[task.setvariable variable=IsSingleApi]$api_count"
+    echo "##vso[task.setvariable variable=Version]$version"
+  displayName: 'Prepare Variables'
+
+- bash: |
+    echo '<?xml version="1.0" encoding="UTF-8"?><configuration><packageSources><add key="NuGet.org" value="https://api.nuget.org/v3/index.json" /><add key="GitHub" value="https://nuget.pkg.github.com/pro-celigo/index.json" /></packageSources><packageSourceCredentials><GitHub><add key="Username" value="pro-celigo" /><add key="ClearTextPassword" value="$(GitHubPackagesPAT)" /></GitHub></packageSourceCredentials></configuration>' > NuGet.config
+  displayName: 'Setup NuGet Conf'
+
+- task: Docker@0
+  displayName: 'Build Image'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    imageName: '$(ImageName):$(Build.BuildNumber)'
+    includeLatestTag: true
+  condition: eq(variables['IsSingleApi'],'1')
+
+- task: Docker@0
+  displayName: 'Build Target Project Image'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    imageName: '$(ImageName):$(Build.BuildNumber)'
+    includeLatestTag: true
+    Dockerfile: 'Dockerfile-$(TargetProject)'
+  condition: ne(variables['IsSingleApi'],'1')
+
+- task: ECRPushImage@1
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  displayName: 'Push Image: Staging'
+  inputs:
+    awsCredentials: 'Staging - ECR/ECS (az-devops-container-deployer)'
+    regionName: 'us-east-1'
+    imageSource: 'imagename'
+    sourceImageName: '$(ImageName)'
+    repositoryName: '$(ImageName)'
+    pushTag: '$(Build.BuildNumber)'
+    outputVariable: 'PublishedImage'
