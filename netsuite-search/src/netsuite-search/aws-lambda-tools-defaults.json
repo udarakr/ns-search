@@ -11,6 +11,6 @@
   "package-type": "image",
   "function-memory-size": 256,
   "function-timeout": 30,
-  "image-command": "netsuite-search::netsuite_search.Function::FunctionHandler",
+  "image-command": "netsuite-search::Celigo.CE.Nestsuite.Search.Function::FunctionHandlerAsync",
   "docker-host-build-output-dir": "./bin/Release/net5.0/linux-x64/publish"
 }
