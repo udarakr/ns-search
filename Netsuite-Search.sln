@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.808.5
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celigo.CloudExtend.Netsuite.NetsuiteProxy", "Celigo.CloudExtend.Netsuite.NetsuiteProxy\src\Celigo.CloudExtend.Netsuite.NetsuiteProxy.csproj", "{4902F42F-A884-4615-A622-E35E12658A05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.CloudExtend.NetSuite.Search", "Lambda.CE.NetSuite.Search\Lambda.CloudExtend.NetSuite.Search.csproj", "{28F649C1-9FBC-4C6A-B6C1-EDE6B323060B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4902F42F-A884-4615-A622-E35E12658A05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4902F42F-A884-4615-A622-E35E12658A05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4902F42F-A884-4615-A622-E35E12658A05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4902F42F-A884-4615-A622-E35E12658A05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F649C1-9FBC-4C6A-B6C1-EDE6B323060B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F649C1-9FBC-4C6A-B6C1-EDE6B323060B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F649C1-9FBC-4C6A-B6C1-EDE6B323060B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F649C1-9FBC-4C6A-B6C1-EDE6B323060B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3A742229-9A2F-4E77-8A7A-C41D4300F642}
+	EndGlobalSection
+EndGlobal
